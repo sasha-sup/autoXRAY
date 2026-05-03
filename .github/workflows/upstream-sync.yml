@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Configure git
         run: |
@@ -39,7 +39,7 @@ jobs:
         if: steps.check.outputs.behind != '0'
         id: existing
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
         run: |
           COUNT=$(gh pr list --state open --search "Sync from upstream in:title" --json number --jq 'length')
           if [ "$COUNT" -gt 0 ]; then
@@ -66,7 +66,7 @@ jobs:
       - name: Push branch and open PR (clean merge)
         if: steps.merge.outputs.result == 'clean'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
         run: |
           git push origin "${{ steps.merge.outputs.branch }}"
           gh pr create \
@@ -78,7 +78,7 @@ jobs:
       - name: Open issue (merge has conflicts)
         if: steps.merge.outputs.result == 'conflict'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
         run: |
           EXISTING=$(gh issue list --state open --search "Manual upstream sync needed in:title" --json number --jq 'length')
           if [ "$EXISTING" -gt 0 ]; then
